@@ -10,7 +10,7 @@ LeNet model: http://yann.lecun.com/exdb/lenet/
 from base.base_model import BaseModel
 from keras.layers import (Dense, Conv2D, MaxPooling2D, 
                           Dropout, Flatten)
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 import keras.utils
 
 class LeNet_MNIST(BaseModel):
@@ -26,6 +26,9 @@ class LeNet_MNIST(BaseModel):
     POOL_STRIDES = (2,2)
     ACTIV = 'relu'
     LEARN_RATE = 0.01
+    
+    conv_layers = 3
+    dense_layers = 2
     
     def __init__(self):
         super().__init__()
@@ -64,3 +67,6 @@ class LeNet_MNIST(BaseModel):
                            optimizer=keras.optimizers.Adam(lr=self.LEARN_RATE),
                            metrics=['accuracy'])
         print(self.model.summary())
+        
+    def load_weights(self, file_path):
+        self.model = load_model(file_path)
