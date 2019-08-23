@@ -8,6 +8,7 @@ https://github.com/Ahmkel/Keras-Project-Template
 
 class BaseDataLoader(object):
     def __init__(self):
+        pass
         #self.config = config
 
     def get_train_data(self):
