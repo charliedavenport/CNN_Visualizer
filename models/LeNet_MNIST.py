@@ -10,7 +10,7 @@ LeNet model: http://yann.lecun.com/exdb/lenet/
 from base.base_model import BaseModel
 from keras.layers import (Dense, Conv2D, MaxPooling2D, 
                           Dropout, Flatten)
-from keras.models import Sequential, load_model
+from keras.models import Sequential
 import keras.utils
 import os
 from datetime import datetime
@@ -81,6 +81,9 @@ class LeNet_MNIST(BaseModel):
             config_path = os.path.join(config_dir, '{0}-{1}.json'.format(self.name, now))
             print('Saving configuration in {}'.format(config_path))
             self.export_config(config_path)
+        else:
+            print('Not saving the config for this file. To save model config, pass in'
+                  + ' save_config=True')
 
 
 

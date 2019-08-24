@@ -6,8 +6,6 @@ Created on Fri Aug 23 10:31:04 2019
 based on the template provided by https://github.com/Ahmkel/Keras-Project-Template
 """
 
-from json import loads
-
 from keras.models import model_from_json
 
 class BaseModel(object):
@@ -36,10 +34,9 @@ class BaseModel(object):
     def build_from_config(self, config_path):
         print("Building model from config {} ....\n".format(config_path))
         with open(config_path, 'r') as f:
-            #json_str = loads(f.read())
             self.model = model_from_json(f.read())
-            print('Model Summary:')
-            print(self.model.summary())
+        print('Model Summary:')
+        print(self.model.summary())
         
     def export_config(self, file_path):
         json_str = self.model.to_json()
