@@ -40,11 +40,11 @@ class LeNet_MNIST_trainer(BaseTrainer):
                   + 'to save training data to disk.')
         if save_csv:
             self.callbacks.append(keras.callbacks.CSVLogger(os.path.join(logdir, "{0}.csv".format(self.model.name)),
-                                                        separator=',', append=True))
+                                                            separator=',', append=True))
         if save_chkpt:
             weights_fname = self.model.name + "-weights.{epoch:02d}-{val_loss:.4f}.hdf5"
             self.callbacks.append(keras.callbacks.ModelCheckpoint(os.path.join(logdir, weights_fname),
-                                                              save_best_only=True))
+                                                                  save_best_only=True))
         print(self.callbacks)
         
         
@@ -52,8 +52,8 @@ class LeNet_MNIST_trainer(BaseTrainer):
         if lr_sched is not None:
             self.callbacks.append(keras.callbacks.LearningRateScheduler(lr_sched))
         hist = self.model.model.fit(self.data[0], self.data[1], epochs=epochs,
-                              callbacks=self.callbacks, batch_size=batch_size,
-                              validation_split = val_split)
+                                    callbacks=self.callbacks, batch_size=batch_size,
+                                    validation_split = val_split)
         self.loss.extend(hist.history['loss'])
         self.acc.extend(hist.history['acc'])
         self.val_loss.extend(hist.history['val_loss'])
