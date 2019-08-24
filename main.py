@@ -14,14 +14,15 @@ from trainers.LeNet_MNIST_trainer import LeNet_MNIST_trainer
 
 
 def main():
-    print("Creating leNet model...")
+    
     lenet_model = LeNet_MNIST()
     
-    print("Training leNet model on MNIST...")
+    
     mnistDL = MNIST_data_loader()
     trainer = LeNet_MNIST_trainer(lenet_model, 
-                                  mnistDL.get_train_data())
-    trainer.train(epochs=10)
+                                  mnistDL.get_train_data(),
+                                  save_chkpt=False, save_csv=False)
+    trainer.train(epochs=5)
 
 
 if __name__=="__main__":
