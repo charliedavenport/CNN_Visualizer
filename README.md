@@ -1,6 +1,6 @@
 # CNN_Visualizer
  
-Create intuitive & beautiful visualizations of the internal workings of Convolutional Neural Networks (CNNs).
+Visualize the internal workings of Convolutional Neural Networks (CNNs).
 
 This project is an extension of this jupyter notebook I wrote: https://github.com/charliedavenport/LeNet-MNIST-Demo to produce this gif: https://gfycat.com/affectionatememorablegreyhounddog-artificial-intelligence-neural-networks
 
