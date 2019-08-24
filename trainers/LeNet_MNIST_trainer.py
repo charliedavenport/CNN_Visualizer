@@ -8,7 +8,6 @@ Created on Fri Aug 23 12:12:55 2019
 from base.base_trainer import BaseTrainer
 from models.LeNet_MNIST import LeNet_MNIST
 from data_loaders.MNIST_data_loader import MNIST_data_loader
-from utils.dirs import create_dirs
 from datetime import datetime
 import keras.callbacks
 import os
@@ -42,7 +41,9 @@ class LeNet_MNIST_trainer(BaseTrainer):
                                                               save_best_only=True))
         
         
-    def train(self, epochs, batch_size=64, val_split = 0.2):
+    def train(self, epochs, batch_size=64, val_split = 0.2, lr_sched=None):
+        if lr_sched is not None:
+            self.callbacks.append(keras.callbacks.LearningRateScheduler(lr_sched))
         hist = self.model.model.fit(self.data[0], self.data[1], epochs=epochs,
                               callbacks=self.callbacks, batch_size=batch_size,
                               validation_split = val_split)
