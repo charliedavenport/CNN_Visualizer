@@ -6,7 +6,7 @@ Created on Fri Aug 23 10:31:04 2019
 based on the template provided by https://github.com/Ahmkel/Keras-Project-Template
 """
 
-from keras.models import model_from_json
+from keras.models import model_from_json, load_model
 
 class BaseModel(object):
     def __init__(self):
@@ -37,6 +37,9 @@ class BaseModel(object):
             self.model = model_from_json(f.read())
         print('Model Summary:')
         print(self.model.summary())
+        
+    def load_checkpoint(self, checkpoint_path):
+        self.model = load_model(checkpoint_path)
         
     def export_config(self, file_path):
         json_str = self.model.to_json()

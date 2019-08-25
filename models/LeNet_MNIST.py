@@ -8,11 +8,15 @@ LeNet model: http://yann.lecun.com/exdb/lenet/
 """
 
 from base.base_model import BaseModel
+from data_loaders.MNIST_data_loader import MNIST_data_loader
+
 from keras.layers import (Dense, Conv2D, MaxPooling2D, 
                           Dropout, Flatten)
-from keras.models import Sequential
+from keras.models import Sequential, Model
 import keras.utils
 import os
+import numpy as np
+import matplotlib.pyplot as plt
 from datetime import datetime
 
 class LeNet_MNIST(BaseModel):
@@ -32,13 +36,19 @@ class LeNet_MNIST(BaseModel):
     conv_layers = 3
     dense_layers = 2
     
-    def __init__(self, from_config=False, save_config=False, config_dir='configs', config_name=None):
+    def __init__(self, from_chkpt=False, chkpt_path=None, from_config=False, save_config=False, 
+                 config_dir='configs', config_name=None):
         super().__init__()
-        if from_config and config_name is not None:
+        if from_chkpt and chkpt_path is not None:
+            self.load_checkpoint(chkpt_path)
+        elif from_config and config_name is not None:
             config_path = os.path.join(config_dir, config_name)
             self.build_from_config(config_path)    
         else:
             self.build_model(save_config, config_dir)
+            
+        self.init_layer_models()
+        
         
     def build_model(self, save_config, config_dir):
         
@@ -84,16 +94,81 @@ class LeNet_MNIST(BaseModel):
         else:
             print('Not saving the config for this file. To save model config, pass in'
                   + ' save_config=True')
+            
+    def init_layer_models(self):
+        self.layer_models = []
+        for layer in self.model.layers:
+            name = layer.get_config()['name']
+            # only get the conv2d and dense layers
+            if ('conv2d' in name or 'dense' in name):
+                self.layer_models.append(Model(inputs=self.model.input,
+                                               outputs=layer.output))
+                
+    def get_n_layers(self):
+        return len(self.layer_models)
+        
+    
+    def get_layer_outputs(self, layer_ind, input_img):
+        if (layer_ind > len(self.layer_models)):
+            print('LeNet_MNIST.get_layer_outputs: invalid layer_ind')
+            return
+        if (len(input_img.shape) < 4):
+            input_img = np.expand_dims(input_img, axis=0)
+        layer_model = self.layer_models[layer_ind]
+        pred = layer_model.predict(input_img)
+        if layer_ind < self.conv_layers:
+            # conv layer
+            n_filter = pred.shape[-1]  
+            n_row = int(np.ceil(np.sqrt(n_filter)))
+            n_col = n_filter // n_row
+            #print(n_row, n_col)
+            im_size = pred.shape[1:3]
+            #print(im_size)
+            activations_grid = np.empty(shape=(im_size[0] * n_row, 
+                                               im_size[1] * n_col))
+            #print(activations_grid.shape)
+            filter_index = 0
+            for i in range(n_row):
+                for j in range(n_col):
+                    x = im_size[0] # store the image size for indexing
+                    activations_grid[i*x: (i+1)*x, 
+                                     j*x: (j+1)*x] = pred[0,:,:, filter_index]
+                    filter_index += 1
+
+            return activations_grid
+        else:
+            # dense layer (including output layer)
+            if pred.size > 10:
+                pred = pred.reshape(12, -1)
+            return pred
+            
+            
+        
 
 
 
 if __name__=="__main__":
     # Test the LeNet_MNIST class:
     # from config
-    config_dir = '..\configs'
-    config_name = 'LeNet_MNIST-20190824-150631.json'
-    LeNet_MNIST(from_config=True, save_config=False, 
-                config_dir=config_dir, config_name=config_name)
+    #config_dir = '..\configs'
+    #config_name = 'LeNet_MNIST-20190824-150631.json'
+    #lenet = LeNet_MNIST(from_config=True, save_config=False, 
+    #            config_dir=config_dir, config_name=config_name)
+    
+    # load model checkpoint
+    lenet = LeNet_MNIST(from_chkpt=True, chkpt_path='..\experiments\LeNet_MNIST-20190823-210500\LeNet_MNIST-weights.03-0.0895.hdf5')
+    
+    # load weights
+    #lenet.load_weights('..\experiments\LeNet_MNIST-20190823-210500\LeNet_MNIST-weights.03-0.0895.hdf5')
+    
+    # test layer outputs
+    test_img = MNIST_data_loader().get_test_data()[0][1]
+    for ind in range(lenet.get_n_layers()):
+        result = lenet.get_layer_outputs(ind, test_img)
+        print(lenet.layer_models[ind].layers[-1].get_config()['name'])
+        plt.imshow(result)
+        plt.show()
+    
     # from scratch
-    LeNet_MNIST(False, False, config_dir, None)
+    #LeNet_MNIST(False, False, config_dir, None)
     

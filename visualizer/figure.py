@@ -12,8 +12,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 
-from keras.models import load_model
-
 class LeNet_MNIST_Figure(object):
     
     
@@ -63,7 +61,7 @@ class LeNet_MNIST_Figure(object):
             new_ax = self.fig.add_axes([left,1.0, self.im_width,1.0])
             self.layer_axes.append(new_ax)
             new_ax.set_title('Convolutional Layer {}'.format(i+1), fontdict=self.font_dict)
-            #new_ax.axis('off')
+            new_ax.axis('off')
             
             # ARROW
             left = (i+2) * self.im_width + (i+1) * self.arr_width
@@ -84,11 +82,12 @@ class LeNet_MNIST_Figure(object):
             self.add_arrow(left)
             
         # OUTPUT LAYER
-        # debug
-        pred = np.random.rand(1,10)
+        # debug - random numbers for output layer
+        #pred = np.random.rand(1,10)
         left = (n_layer) *(self.im_width + self.arr_width)
         new_ax = self.fig.add_axes([left,1.0, self.im_width,1.0])
-        new_ax.matshow(pred)
+        self.layer_axes.append(new_ax)
+        #new_ax.matshow(pred)
         new_ax.set_title('Output Layer', fontdict=self.font_dict)
         new_ax.axis('on')
         new_ax.set_yticks([])
@@ -97,21 +96,8 @@ class LeNet_MNIST_Figure(object):
         new_ax.xaxis.set_ticks_position('bottom')
         new_ax.spines['bottom'].set_color('black')
         new_ax.tick_params(axis='x', colors='black')
-        pred_label = np.argmax(pred[0])
-        #true_label = np.argmax(y_test[test_ind])
-        new_ax.text(0,4, 'Prediction: ', fontdict=self.font_dict_s)
-        confidence = pred[0, pred_label] * 100
-        fd_b = {'fontsize' : 48, 
-                'weight' : 'bold',
-                'color' : 'black'}
-        if confidence > 98.0: 
-            new_ax.text(4,4, '{0}'.format(pred_label), fontdict=fd_b)
-        else:
-            new_ax.text(4,4, '[?]', fontdict=self.font_dict)
-        new_ax.text(0,5, 'Confidence: {0:.6f}%'.format(confidence), fontdict=self.font_dict_s)
-        
         # debug
-        self.fig.savefig("test.png", dpi=150, bbox_inches='tight', facecolor='white')
+        #self.fig.savefig("test.png", dpi=150, bbox_inches='tight', facecolor='white')
         
     def add_arrow(self, left):
         new_ax = self.fig.add_axes([left,1.0, self.arr_width,1.0])
@@ -122,15 +108,48 @@ class LeNet_MNIST_Figure(object):
         new_ax.add_patch(arrow)
         new_ax.axis('off')
         
-        
+    def output_text(self, prediction, confidence):
+        ax = self.layer_axes[-1]
+        fd_b = {'fontsize' : 48, 
+                'weight' : 'bold',
+                'color' : 'black'}
+        if confidence > 50.0: 
+            ax.text(4,4, '{0}'.format(prediction), fontdict=fd_b)
+        else:
+            ax.text(4,4, '[?]', fontdict=self.font_dict)
+        ax.text(0,5, 'Confidence: {0:.6f}%'.format(confidence), fontdict=self.font_dict_s)
+    
     def plot_layer_outputs(self, input_img):
-        pass
+        for i, ax in enumerate(self.layer_axes):
+            if i==0:
+                ax.imshow(input_img.reshape(28,28), cmap='Greys')
+            else:
+                activations = self.model.get_layer_outputs(i-1, input_img)
+                ax.imshow(activations)
+                if i == len(self.layer_axes) - 1:
+                    prediction = np.argmax(activations[0])
+                    confidence = activations[0, prediction] * 100
+                    self.output_text(prediction, confidence)
+                
+            
     
 if __name__=="__main__":
-    model = LeNet_MNIST()
-    model.load('..\experiments\LeNet_MNIST-20190823-175823\LeNet_MNIST-weights.03-0.1166.hdf5')
+    model = LeNet_MNIST(from_chkpt=True,
+                        chkpt_path='..\experiments\LeNet_MNIST-20190823-210500\LeNet_MNIST-weights.03-0.0895.hdf5')
+    
     dl = MNIST_data_loader()
+    X_test, y_test = dl.get_test_data()
+    #loss, acc = model.model.evaluate(X_test, y_test)
+    #print('loss = {}, acc = {}'.format(loss, acc))
+    
     newFig = LeNet_MNIST_Figure(model, dl)
+    
+    test_img = X_test[np.random.randint(X_test.shape[0])]
+    
+    newFig.plot_layer_outputs(test_img)
+    newFig.fig.show()
+
+    #newFig.fig.savefig('test.png', bbox_inches='tight')
 
         
     
