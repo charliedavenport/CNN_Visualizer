@@ -118,6 +118,7 @@ class LeNet_MNIST(BaseModel):
         pred = layer_model.predict(input_img)
         if layer_ind < self.conv_layers:
             # conv layer
+            print('output shape = {}'.format(pred.shape))
             n_filter = pred.shape[-1]  
             n_row = int(np.ceil(np.sqrt(n_filter)))
             n_col = n_filter // n_row
@@ -156,7 +157,25 @@ if __name__=="__main__":
     #            config_dir=config_dir, config_name=config_name)
     
     # load model checkpoint
-    lenet = LeNet_MNIST(from_chkpt=True, chkpt_path='..\experiments\LeNet_MNIST-20190823-210500\LeNet_MNIST-weights.03-0.0895.hdf5')
+    lenet = LeNet_MNIST(from_chkpt=True, 
+                        chkpt_path='..\experiments\LeNet_MNIST-20190823-210500\LeNet_MNIST-weights.03-0.0895.hdf5')
+    
+#    test_img = MNIST_data_loader().get_test_data()[0][1]
+#    test_img = np.expand_dims(test_img, axis=0)
+#    conv_1_out = lenet.layer_models[0].predict(test_img)
+#    print(conv_1_out[0,:,:,0])
+#    for i in range(6):
+#        plt.imshow(conv_1_out[0,:,:,i])
+#        plt.show()
+    print('LAYER 1 FILTERS (6)')
+    for i in range(6):
+        # shape (5,5,1,6)
+        print('Convolutional filter {}'.format(i))
+        plt.imshow(lenet.model.layers[0].get_weights()[0][:,:,0,i])
+        print('bias = {}'.format(lenet.model.layers[0].get_weights()[1][i]))
+        plt.show()
+    
+    
     
     # load weights
     #lenet.load_weights('..\experiments\LeNet_MNIST-20190823-210500\LeNet_MNIST-weights.03-0.0895.hdf5')

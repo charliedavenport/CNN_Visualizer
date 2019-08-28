@@ -75,7 +75,7 @@ class LeNet_MNIST_Figure(object):
             self.layer_axes.append(new_ax)
             #i -= self.model.conv_layers
             new_ax.set_title('Dense Layer {}'.format(i+1), fontdict=self.font_dict)
-            #new_ax.axis('off')
+            new_ax.axis('off')
             
             # ARROW
             left = (i+2) * self.im_width + (i+1) * self.arr_width
@@ -134,6 +134,7 @@ class LeNet_MNIST_Figure(object):
             
     
 if __name__=="__main__":
+    #plt.ion()
     model = LeNet_MNIST(from_chkpt=True,
                         chkpt_path='..\experiments\LeNet_MNIST-20190823-210500\LeNet_MNIST-weights.03-0.0895.hdf5')
     
@@ -144,12 +145,13 @@ if __name__=="__main__":
     
     newFig = LeNet_MNIST_Figure(model, dl)
     
-    test_img = X_test[np.random.randint(X_test.shape[0])]
-    
+    rand_ind = np.random.randint(X_test.shape[0])
+    test_img = X_test[rand_ind]
     newFig.plot_layer_outputs(test_img)
-    newFig.fig.show()
-
-    #newFig.fig.savefig('test.png', bbox_inches='tight')
+    #plt.show()
+    #newFig.fig.show()
+    
+    newFig.fig.savefig('test_{}.png'.format(rand_ind), bbox_inches='tight')
 
         
     
